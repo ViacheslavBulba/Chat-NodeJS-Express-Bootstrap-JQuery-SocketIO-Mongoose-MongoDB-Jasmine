@@ -20,41 +20,55 @@
             <br>
             <textarea id="message" class="form-control" placeholder="Message" type="text"></textarea>
             <br>
-            <button id="send" class="btn btn-success">Send</button>
+            <div class="d-flex justify-content-between">
+                <button id="send" class="btn btn-success">Send</button>
+                <button id="delete-all" class="btn btn-success">Delete all messages</button>
+            </div>
         </div>
         <br>
         <div id="messages"></div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
     <script>
+        const HOST = 'http://localhost:3000/messages';
         const socket = io();
 
         $(() => {
-            $('#send').click(() => {
-                const message = {name: $('#name').val(), message: $('#message').val()};
-                postMessage(message);
-                $('#message').val(''); // clear the message input after send
-            });
             getMessages();
-            console.log('loaded');
         })
+
+        $('#send').click(() => {
+            const message = { timestamp: moment().format('MM/DD/YYYY h:mm:ss a'), name: $('#name').val(), message: $('#message').val() };
+            postMessage(message);
+            $('#message').val(''); // clear the message input after send
+        });
+
+        $('#delete-all').click(() => {
+            deleteMessages();
+        });
 
         socket.on('message', addMessage);
 
+        socket.on('delete', () => $('#messages').empty());
+
         function addMessage(message) {
-            $('#messages').append(`<h4>${message.name}</h4><p>${message.message}</p>`);
+            $('#messages').append(`<h4>${message.name} (${message.timestamp})</h4><p>${message.message}</p>`);
         }
 
         function getMessages() {
-            $.get('http://localhost:3000/messages', (data) => {
-                console.log(data);
+            $.get(HOST, (data) => {
                 data.forEach(addMessage);
             })
         }
 
         function postMessage(message) {
-            $.post('http://localhost:3000/messages', message)
+            $.post(HOST, message);
+        }
+
+        function deleteMessages() {
+            fetch(HOST, { method: 'DELETE' });
         }
     </script>
 </body>

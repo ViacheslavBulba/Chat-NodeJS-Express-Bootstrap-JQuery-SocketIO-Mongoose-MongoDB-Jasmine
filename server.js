@@ -14,6 +14,7 @@ mongoose.Promise = Promise;
 const dbUrl = 'mongodb+srv://test:test@cluster0.qewkhqy.mongodb.net/test';
 
 const Message = mongoose.model('Message', {
+    timestamp: String,
     name: String,
     message: String
 });
@@ -22,6 +23,13 @@ app.get('/messages', (req, res) => {
     Message.find({}, (err, messages) => {
         res.send(messages);
     });
+});
+
+app.delete('/messages', (req, res) => {
+    Message.remove({}, (err) => {
+        console.log('all messages deleted');
+    })
+    io.emit('delete');
 });
 
 app.post('/messages', (req, res) => { // curl -i -X POST -H "Content-Type: application/json" -d "{ \"name\": \"Tim\", \"message\": \"Hi\" }" http://localhost:3000/messages
