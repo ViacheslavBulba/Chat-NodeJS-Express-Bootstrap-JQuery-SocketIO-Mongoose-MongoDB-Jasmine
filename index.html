@@ -22,7 +22,7 @@
             <br>
             <div class="d-flex justify-content-between">
                 <button id="send" class="btn btn-success">Send</button>
-                <button id="delete-all" class="btn btn-success">Delete all messages</button>
+                <button id="delete-all" class="btn btn-danger">Delete all messages</button>
             </div>
         </div>
         <br>
@@ -40,6 +40,10 @@
         })
 
         $('#send').click(() => {
+            if ($('#message').val() === '' || $('#name').val() === '') {
+                alert('Name or Message cannot be empty');
+                return;
+            }
             const message = { timestamp: moment().format('MM/DD/YYYY h:mm:ss a'), name: $('#name').val(), message: $('#message').val() };
             postMessage(message);
             $('#message').val(''); // clear the message input after send
