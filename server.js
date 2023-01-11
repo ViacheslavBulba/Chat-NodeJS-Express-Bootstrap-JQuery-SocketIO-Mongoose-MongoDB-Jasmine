@@ -32,24 +32,23 @@ app.delete('/messages', (req, res) => {
     io.emit('delete');
 });
 
-app.post('/messages', (req, res) => { // curl -i -X POST -H "Content-Type: application/json" -d "{ \"name\": \"Tim\", \"message\": \"Hi\" }" http://localhost:3000/messages
-    const message = new Message(req.body);
-    message.save().then(() => {
-        // filter words
-        Message.findOne({ message: 'badword' }, (err, censored) => {
-            if (censored) {
-                console.log('censored word found', censored);
-                Message.remove({ _id: censored.id }, (err) => {
-                    console.log('censored message removed');
-                })
-            }
-        })
-        io.emit('message', req.body);
+app.post('/messages', async (req, res) => { // curl -i -X POST -H "Content-Type: application/json" -d "{ \"name\": \"Tim\", \"message\": \"Hi\" }" http://localhost:3000/messages
+    try {
+        const message = new Message(req.body);
+        const savedMessage = await message.save();
+        const censored = await Message.findOne({ message: 'censored' });
+        if (censored) {
+            await Message.remove({ _id: censored.id }, (err) => {
+                console.log('message with censored word removed');
+            })
+        } else {
+            io.emit('message', req.body);
+        }
         res.sendStatus(200);
-    }).catch((err) => {
+    } catch (error) {
         res.sendStatus(500);
-        return console.error('error saving message to db', err);
-    })
+        return console.error('error saving message to db', error);
+    }
 });
 
 io.on('connection', (socket) => {
