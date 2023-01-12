@@ -25,6 +25,13 @@ app.get('/messages', (req, res) => {
     });
 });
 
+app.get('/messages/:user', (req, res) => {
+    const user = req.params.user;
+    Message.find({name: user}, (err, messages) => {
+        res.send(messages);
+    });
+});
+
 app.delete('/messages', (req, res) => {
     Message.remove({}, (err) => {
         console.log('all messages deleted');
